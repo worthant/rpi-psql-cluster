@@ -15,6 +15,103 @@ https://github.com/user-attachments/assets/0a9c1fa0-1200-4319-828b-c59e3ecd1ecc
 
 ## What is it?
 
+```mermaid
+graph BT
+    %% Power Infrastructure
+    PowerBank[⚡ 20,000mAh Power Bank<br/>~50W Power Delivery]
+    
+    %% Network Infrastructure  
+    Switch[🔌 1 Gbps Network Switch]
+    
+    %% Computing Nodes
+    Laptop[💻 Laptop<br/>Fedora Workstation 41<br/>Optional Main Node]
+    RPi1[🔴 Raspberry Pi 5 #1<br/>Ubuntu Server LTS 42<br/>512GB PCIe SSD]
+    RPi2[🔴 Raspberry Pi 5 #2<br/>Ubuntu Server LTS 42<br/>512GB PCIe SSD]
+    RPi3[🔴 Raspberry Pi 5 #3<br/>Ubuntu Server LTS 42<br/>512GB PCIe SSD]
+    
+    %% Monitoring Hardware
+    ESP32[📡 ESP32 Board<br/>PlatformIO + Arduino/ESP-IDF]
+    Screen[📺 240x240 IPS Display<br/>Real-time Monitoring]
+    
+    %% Database Layer
+    subgraph DB [" 🗄️ PostgreSQL Cluster Layer"]
+        PG1[PostgreSQL<br/>Primary/Replica]
+        PG2[PostgreSQL<br/>Primary/Replica] 
+        PG3[PostgreSQL<br/>Primary/Replica]
+        PGLaptop[PostgreSQL<br/>Primary/Replica]
+        PGPool[pgpool2<br/>Load Balancer & Failover]
+    end
+    
+    %% Monitoring Layer
+    subgraph MON [" 📊 Monitoring Layer"]
+        MonScript1[Python Monitoring<br/>System Stats]
+        MonScript2[Python Monitoring<br/>System Stats]
+        MonScript3[Python Monitoring<br/>System Stats]
+        MonDisplay[Real-time Display<br/>Cluster Status]
+    end
+    
+    %% Power Connections
+    PowerBank -.->|Power| Switch
+    PowerBank -.->|Power| RPi1
+    PowerBank -.->|Power| RPi2  
+    PowerBank -.->|Power| RPi3
+    PowerBank -.->|Power| ESP32
+    
+    %% Network Connections
+    Switch <-->|Ethernet| Laptop
+    Switch <-->|Ethernet| RPi1
+    Switch <-->|Ethernet| RPi2
+    Switch <-->|Ethernet| RPi3
+    
+    %% Physical Monitoring Connections
+    ESP32 <-->|SPI| Screen
+    RPi1 <-->|UART| ESP32
+    RPi2 -.->|UDP Socket| RPi1
+    RPi3 -.->|UDP Socket| RPi1
+    
+    %% Database Logical Connections
+    Laptop --> PGLaptop
+    RPi1 --> PG1
+    RPi2 --> PG2
+    RPi3 --> PG3
+    
+    PGPool <--> PG1
+    PGPool <--> PG2
+    PGPool <--> PG3
+    PGPool <--> PGLaptop
+    
+    PG1 <-.->|Async/Sync<br/>Replication| PG2
+    PG2 <-.->|Async/Sync<br/>Replication| PG3
+    PG3 <-.->|Async/Sync<br/>Replication| PGLaptop
+    PG1 <-.->|Async/Sync<br/>Replication| PGLaptop
+    
+    %% Monitoring Logical Connections
+    RPi1 --> MonScript1
+    RPi2 --> MonScript2
+    RPi3 --> MonScript3
+    
+    MonScript1 -.->|Stats| ESP32
+    MonScript2 -.->|Stats| ESP32
+    MonScript3 -.->|Stats| ESP32
+    
+    ESP32 --> MonDisplay
+    Screen --> MonDisplay
+    
+    %% Styling
+    classDef powerStyle fill:#ff6b6b,stroke:#d63447,stroke-width:2px,color:#fff
+    classDef networkStyle fill:#4ecdc4,stroke:#26a69a,stroke-width:2px,color:#fff  
+    classDef computeStyle fill:#45b7d1,stroke:#2980b9,stroke-width:2px,color:#fff
+    classDef monitorStyle fill:#f9ca24,stroke:#f0932b,stroke-width:2px,color:#000
+    classDef dbStyle fill:#6c5ce7,stroke:#5f3dc4,stroke-width:2px,color:#fff
+    
+    class PowerBank powerStyle
+    class Switch networkStyle
+    class Laptop,RPi1,RPi2,RPi3 computeStyle
+    class ESP32,Screen monitorStyle
+    class PG1,PG2,PG3,PGLaptop,PGPool dbStyle
+```
+
+
 ### Components
 
 0. My laptop (optional, as a main node)
